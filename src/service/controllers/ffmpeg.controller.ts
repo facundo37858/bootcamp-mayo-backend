@@ -54,6 +54,35 @@ class FFMPEGMANAGER {
     }
   }
 
+  async ffmpegJoin(inputVideoSource: string, outputVideoSrc: string){
+
+
+    try{
+      
+    const inputVideoSrc = `${inputVideoSource}`;
+    const principalCommand = 'ffmpeg';
+    // command    ffmpeg -f concat -safe 0 -i mylist.txt -c copy output.mp4
+    const args = [
+      '-f concat',
+      '-safe 0',
+      '-i',
+      `${inputVideoSrc}`,
+      '-c',
+      'copy',
+      `${outputVideoSrc}`
+    ];
+    const options = {
+      shell: true,
+    };
+
+    await AsyncFFMPEG(principalCommand, args, options);
+    return outputVideoSrc;
+
+    }catch(error){
+      throw error
+    }
+  }
+
   async processVideo(
       inputVideoSource: string,
       outputVideoSrc: string,
@@ -78,6 +107,31 @@ class FFMPEGMANAGER {
       throw error;
     }
   }
+
+  async processVideoJoin(
+    inputVideoSource: string,
+    outputVideoSrc: string,
+    context: any,
+    videoSourceId: string) {
+  try {
+    const isValidFile = await this.ffprobe();
+    if (!isValidFile) {
+      throw new Error('El archivo es corrupto');
+    };
+    // // generar mas status de procesamiento de video
+
+    await videoStatusController.createVideoStatus(
+        videoSourceId,
+        context,
+        'doing',
+    );
+
+    const outPutPath = await this.ffmpegJoin(inputVideoSource, outputVideoSrc);
+    return outPutPath;
+  } catch (error) {
+    throw error;
+  }
+}
 }
 
 
